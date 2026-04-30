@@ -1,0 +1,18 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/*.html", "/*.json"]
+  },
+  "routes": [
+    {
+      "route": "/room-display-msal.html",
+      "serve": "/room-display-msal.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/room-config.html",
+      "serve": "/room-config.html",
+      "statusCode": 200
+    }
+  ]
+}

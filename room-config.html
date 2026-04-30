@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOCAL: Room Display — Configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:       #d94f1e;
+    --brand-orange: #e8622f;
+    --green:        #2e7d1e;
+    --text:         #1a1a1a;
+    --text-mid:     #444;
+    --text-dim:     #888;
+    --border:       #ddd;
+    --bg:           #f5f5f5;
+    --card:         #fff;
+    --amber:        #e8a020;
+    --blue:         #0078d4;
+    --red:          #c62828;
+    --divider:      #eee;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Open Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  /* Logo now uses inline SVG image */
+  .header-title { font-size: 16px; font-weight: 700; color: var(--text-mid); }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 8px 20px; border-radius: 50px; border: none;
+    font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary   { background: var(--green);  color: white; }
+  .btn-primary:hover { background: #256618; }
+  .btn-orange    { background: var(--brand-orange); color: white; }
+  .btn-orange:hover  { background: #c44e12; }
+  .btn-outline   { background: none; color: var(--text-mid); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--text-mid); color: var(--text); }
+  .btn-danger    { background: none; color: var(--red); border: 1.5px solid var(--red); }
+  .btn-danger:hover  { background: var(--red); color: white; }
+  .btn-sm { padding: 5px 14px; font-size: 12px; }
+  .btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden;
+  }
+  .section-header {
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--divider);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .section-title svg { width: 18px; height: 18px; fill: var(--brand-orange); }
+  .section-body  { padding: 1.5rem; }
+
+  /* ── FORM ELEMENTS ── */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row.full  { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.04em; }
+  .form-group input, .form-group select {
+    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'Open Sans', sans-serif; font-size: 14px; color: var(--text);
+    background: var(--bg); outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--brand-orange); background: white; }
+  .form-hint { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Toggle switch */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+  .toggle-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .toggle-sub   { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .toggle {
+    position: relative; width: 44px; height: 24px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--border);
+    border-radius: 24px; cursor: pointer; transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    background: white; border-radius: 50%; left: 3px; top: 3px;
+    transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ── ROOMS ── */
+  .room-card {
+    border: 1.5px solid var(--border); border-radius: 10px;
+    margin-bottom: 1rem; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .room-card:hover { border-color: #bbb; }
+  .room-card-header {
+    padding: 12px 16px; background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .room-card-header:hover { background: #efefef; }
+  .room-card-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .room-key-badge {
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    background: white; border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px; font-family: monospace;
+  }
+  .room-card-body { padding: 1rem 1.2rem; display: none; border-top: 1px solid var(--divider); }
+  .room-card-body.open { display: block; }
+  .chevron { transition: transform 0.2s; width: 18px; height: 18px; fill: var(--text-dim); }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* Features */
+  .features-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .feature-tag {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--text); color: white;
+    border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600;
+  }
+  .feature-tag .icon-preview { width: 16px; height: 16px; fill: white; }
+  .feature-tag .remove-feat {
+    background: none; border: none; color: rgba(255,255,255,0.7);
+    cursor: pointer; font-size: 16px; line-height: 1; padding: 0;
+    display: flex; align-items: center;
+  }
+  .feature-tag .remove-feat:hover { color: white; }
+  .add-feature-row { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
+  .add-feature-row select { flex: 1; }
+  .add-feature-row input  { flex: 2; }
+
+  /* Add room */
+  .add-room-btn {
+    width: 100%; padding: 12px; border: 2px dashed var(--border);
+    border-radius: 10px; background: none; font-family: 'Open Sans', sans-serif;
+    font-size: 14px; font-weight: 600; color: var(--text-dim);
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .add-room-btn:hover { border-color: var(--brand-orange); color: var(--brand-orange); }
+  .add-room-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* ── SAVE BANNER ── */
+  .save-banner {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--text); color: white;
+    padding: 14px 2rem; display: flex; align-items: center; justify-content: space-between;
+    transform: translateY(100%); transition: transform 0.3s;
+    z-index: 200; box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+  }
+  .save-banner.visible { transform: translateY(0); }
+  .save-banner-text { font-size: 14px; font-weight: 600; }
+  .save-banner-sub  { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .save-banner-actions { display: flex; gap: 10px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; top: 70px; right: 1.5rem;
+    background: var(--text); color: white; border-radius: 10px;
+    padding: 12px 20px; font-size: 14px; font-weight: 600;
+    transform: translateX(120%); transition: transform 0.3s;
+    z-index: 300; display: flex; align-items: center; gap: 8px;
+  }
+  .toast.visible { transform: translateX(0); }
+  .toast.success { background: var(--green); }
+  .toast svg { width: 18px; height: 18px; fill: white; }
+
+  /* Save reminder overlay */
+  .save-reminder-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .save-reminder-overlay.visible { opacity: 1; pointer-events: all; }
+  .save-reminder-box {
+    background: white; border-radius: 16px; padding: 2rem;
+    max-width: 480px; width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .save-reminder-title {
+    font-size: 18px; font-weight: 800; color: var(--green);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .save-reminder-title svg { width: 24px; height: 24px; fill: var(--green); }
+  .save-reminder-steps { display: flex; flex-direction: column; gap: 8px; }
+  .save-reminder-step {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 14px; color: #333; line-height: 1.5;
+  }
+  .step-num {
+    background: var(--brand-orange); color: white; border-radius: 50%;
+    width: 22px; height: 22px; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .save-reminder-path {
+    background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px;
+    padding: 8px 12px; font-family: monospace; font-size: 13px;
+    color: #333; word-break: break-all; margin-top: 4px;
+  }
+  .save-reminder-btn {
+    background: var(--green); color: white; border: none; border-radius: 50px;
+    padding: 12px; font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; width: 100%; margin-top: 0.5rem;
+  }
+  .save-reminder-btn:hover { background: #256618; }
+
+  /* ── PREVIEW LINK ── */
+  .preview-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--blue); font-size: 13px; font-weight: 600;
+    text-decoration: none;
+  }
+  .preview-link:hover { text-decoration: underline; }
+  .preview-link svg { width: 14px; height: 14px; fill: var(--blue); }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: #e8f4fd; border: 1px solid #b3d9f7;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; color: #1565c0; line-height: 1.5;
+    display: flex; gap: 8px; align-items: flex-start; margin-bottom: 1rem;
+  }
+  .info-box svg { width: 16px; height: 16px; fill: #1565c0; flex-shrink: 0; margin-top: 1px; }
+
+  .divider { border: none; border-top: 1px solid var(--divider); margin: 1rem 0; }
+
+  /* ── ICON GRID (for picker) ── */
+  .icon-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .icon-opt {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px; border: 1.5px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s; min-width: 60px;
+    background: white;
+  }
+  .icon-opt:hover   { border-color: var(--brand-orange); }
+  .icon-opt.selected{ border-color: var(--brand-orange); background: #fff3ee; }
+  .icon-opt svg     { width: 22px; height: 22px; fill: var(--text); }
+  .icon-opt span    { font-size: 10px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div style="display:flex;align-items:center;gap:1.5rem">
+    <a href="room-display-msal.html" style="display:flex;align-items:center;"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMb2dvIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MDYuODIgMTc0LjUiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDpub25lO30uY2xzLTJ7ZmlsbDojZmY2ZjNkO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Im02MTkuNTcsMEg4Ny4yNUMzOS4xNCwwLDAsMzkuMTQsMCw4Ny4yNXMzOS4xNCw4Ny4yNSw4Ny4yNSw4Ny4yNWg1MzIuMzJjNDguMTEsMCw4Ny4yNS0zOS4xNCw4Ny4yNS04Ny4yNVM2NjcuNjgsMCw2MTkuNTcsMGgwWiIvPjxnPjxnPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0ibTE1My4xLDEwOS44OHYyNy4xN2gtNzkuNTNWMzcuM2gyNy4wM3Y3Mi41N2g1Mi41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0ibTE1Ny4zOCw4Ny4xN2MwLTI3LjU2LDE5LjU1LTUxLjk3LDU3LjA5LTUxLjk3czU2Ljk2LDI0LjQxLDU2Ljk2LDUxLjk3LTE5LjU1LDUxLjk3LTU2Ljk2LDUxLjk3LTU3LjA5LTI0LjU0LTU3LjA5LTUxLjk3Wm04NC41MiwwYzAtMTEuOTQtOC4yNy0yOC44Ny0yNy41Ni0yOC44N3MtMjcuNDMsMTYuOTMtMjcuNDMsMjguODcsOC4yNywyOC44NywyNy40MywyOC44NywyNy41Ni0xNi45MywyNy41Ni0yOC44N1oiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Im00MjkuMzQsMzcuM2gyNy42OWw0My4zMSw5OS43NGgtMjkuOTJsLTcuMzUtMTcuMzJoLTM5LjlsLTcuMzUsMTcuMzJoLTI5LjkybDQzLjQ0LTk5Ljc0Wm0yNS40Niw1OC4xNGwtMTEuNTUtMjcuNTYtMTEuNTUsMjcuNTZoMjMuMVoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Im01ODguNTMsMTA5Ljg4djI3LjE3aC03OS41M1YzNy4zaDI3LjAzdjcyLjU3aDUyLjVaIi8+PC9nPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0ibTMzNC41NSwxMTYuMDVjLTE4LjUsMC0yNi41MS0xNC4wNC0yNi41MS0yOC43NHM4LjE0LTI5LDI2LjUxLTI5YzE1LjcyLDAsMjMuOTcsMTAuNjUsMjYuNzYsMjAuNmgyOS40MmMtMi40Ni0yMS41OS0yMS4wNC00My43LTU1LjUzLTQzLjctMzYuMjIsMC01Ni4xNywyMy42Mi01Ni4xNyw1Mi44OSwwLDI3LjA0LDE3LjMyLDUxLjA1LDU1LjI1LDUxLjA1LDM1LjY2LDAsNTMuNzUtMjEuNjIsNTYuNDQtNDMuNzFoLTI5LjRjLTIuNTYsOS41LTEwLjcsMjAuNjEtMjYuNzcsMjAuNjFaIi8+PC9nPjxjaXJjbGUgY2xhc3M9ImNscy0yIiBjeD0iNjE5LjM5IiBjeT0iNjIuMjkiIHI9IjE2LjUzIi8+PGNpcmNsZSBjbGFzcz0iY2xzLTIiIGN4PSI2MTkuMzkiIGN5PSIxMTIuMjIiIHI9IjE2LjUzIi8+PC9zdmc+" alt="LOCAL:" style="height:36px;width:auto;display:block;"></a>
+    <div class="header-title">⚙ Room Display Configuration</div>
+  </div>
+  <div class="header-actions">
+    <a class="preview-link" href="room-display-msal.html" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+      Preview display
+    </a>
+    <button class="btn btn-primary" onclick="saveAndDownload()">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Save Config</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+  <span id="toastMsg">Saved!</span>
+</div>
+
+<div style="background:#fff3e0;border-left:4px solid #e8622f;padding:12px 20px;font-size:13px;color:#7a3000;font-family:Open Sans,sans-serif;">
+  <strong>How to apply changes:</strong> Click <strong>Save Config</strong> → download <code>room-config.json</code> → place it in the same folder as the HTML files → restart the server (run <code>Start-Room-Display.bat</code>). The server automatically applies the config on startup.
+</div>
+<div class="container">
+
+  <!-- ── GLOBAL SETTINGS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Global Settings
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Logo URL</label>
+          <input type="text" id="cfg-logoUrl" placeholder="e.g. logo.png or https://...">
+          <div class="form-hint">Path or URL to your logo image. Leave blank for default.</div>
+        </div>
+        <div class="form-group">
+          <label>Outlook Booking URL</label>
+          <input type="text" id="cfg-outlookUrl">
+          <div class="form-hint">URL the QR code points to for booking.</div>
+        </div>
+      </div>
+
+      <div class="form-row three">
+        <div class="form-group">
+          <label>Timeline Start (hour)</label>
+          <input type="number" id="cfg-startHour" min="0" max="12">
+        </div>
+        <div class="form-group">
+          <label>Timeline End (hour)</label>
+          <input type="number" id="cfg-endHour" min="12" max="24">
+        </div>
+        <div class="form-group">
+          <label>Check-in Window (mins)</label>
+          <input type="number" id="cfg-checkInWindowMins" min="1" max="30">
+          <div class="form-hint">Booking released if no check-in within this time.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Timezone</label>
+          <select id="cfg-timezone">
+            <option value="Australia/Melbourne">Australia/Melbourne</option>
+            <option value="Australia/Sydney">Australia/Sydney</option>
+            <option value="Australia/Brisbane">Australia/Brisbane</option>
+            <option value="Australia/Perth">Australia/Perth</option>
+            <option value="Australia/Adelaide">Australia/Adelaide</option>
+            <option value="Australia/Darwin">Australia/Darwin</option>
+            <option value="Pacific/Auckland">Pacific/Auckland</option>
+            <option value="Asia/Singapore">Asia/Singapore</option>
+            <option value="Europe/London">Europe/London</option>
+            <option value="America/New_York">America/New_York</option>
+            <option value="America/Los_Angeles">America/Los_Angeles</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Locale (date/time format)</label>
+          <select id="cfg-locale">
+            <option value="en-AU">en-AU (Australian)</option>
+            <option value="en-GB">en-GB (British)</option>
+            <option value="en-US">en-US (American)</option>
+            <option value="en-NZ">en-NZ (New Zealand)</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Check-in toggle -->
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Check-in Required ("I'm Here" button)</div>
+          <div class="toggle-sub">When on, bookings need check-in or they auto-release. Turn off to skip check-in and go straight to Occupied.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="cfg-checkInEnabled" onchange="markDirty()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Booking Durations -->
+      <div style="margin-bottom:1rem">
+        <div class="toggle-label" style="margin-bottom:0.5rem">Book Now — Duration Options</div>
+        <div class="toggle-sub" style="margin-bottom:1rem">Customise the duration buttons shown in the Book Now modal. Add up to 6 options.</div>
+        <div id="durationsContainer"></div>
+        <button class="btn btn-outline btn-sm" onclick="addDuration()" style="margin-top:0.5rem">+ Add duration</button>
+      </div>
+
+      <hr class="divider">
+
+      <!-- PIN -->
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">PIN Protection</div>
+          <div class="toggle-sub">Require a PIN before Book Now or I'm Here can be tapped</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="cfg-pinEnabled" onchange="togglePinFields()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div id="pin-fields" style="display:none;margin-top:1rem">
+        <div class="form-row">
+          <div class="form-group">
+            <label>PIN Code</label>
+            <input type="text" id="cfg-pin" maxlength="8" placeholder="e.g. 1234" pattern="[0-9]*" inputmode="numeric">
+            <div class="form-hint">Numbers only. Staff enter this before booking or checking in.</div>
+          </div>
+          <div class="form-group">
+            <label>PIN Prompt Message</label>
+            <input type="text" id="cfg-pinPrompt" placeholder="e.g. Enter staff PIN to continue">
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Azure -->
+      <div class="info-box">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Azure credentials are managed by IT. Contact your MSP to update these values.
+      </div>
+
+      <div class="form-row three">
+        <div class="form-group">
+          <label>Tenant ID</label>
+          <input type="text" id="cfg-tenantId" placeholder="Azure Tenant ID">
+        </div>
+        <div class="form-group">
+          <label>Client ID</label>
+          <input type="text" id="cfg-clientId" placeholder="Azure App Client ID">
+        </div>
+        <div class="form-group">
+          <label>Authority</label>
+          <select id="cfg-authority">
+            <option value="common">Common (work + personal accounts)</option>
+            <option value="organizations">Organizations only (work accounts)</option>
+            <option value="tenant">Specific tenant only</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROOMS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Rooms
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="addRoom()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Add Room
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        The URL key is used in the browser address bar (e.g. ?room=boardroom). Once set, do not change it — tablets are bookmarked to that URL.
+      </div>
+      <div id="rooms-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SAVE REMINDER OVERLAY -->
+<div class="save-reminder-overlay" id="saveReminderOverlay">
+  <div class="save-reminder-box">
+    <div class="save-reminder-title">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+      room-config.json downloaded!
+    </div>
+    <div class="save-reminder-steps">
+      <div class="save-reminder-step">
+        <div class="step-num">1</div>
+        <div>Find the downloaded file in your <strong>Downloads folder</strong></div>
+      </div>
+      <div class="save-reminder-step">
+        <div class="step-num">2</div>
+        <div>
+          Move it to the <strong>Room Booking folder</strong> where your HTML files live:
+          <div class="save-reminder-path" id="reminderPath">Same folder as room-display-msal.html</div>
+        </div>
+      </div>
+      <div class="save-reminder-step">
+        <div class="step-num">3</div>
+        <div>Restart <strong>Start-Room-Display.bat</strong> to apply the changes</div>
+      </div>
+    </div>
+    <button class="save-reminder-btn" onclick="document.getElementById('saveReminderOverlay').classList.remove('visible')">
+      Got it ✓
+    </button>
+  </div>
+</div>
+
+<!-- SAVE BANNER -->
+<div class="save-banner" id="saveBanner">
+  <div>
+    <div class="save-banner-text">You have unsaved changes</div>
+    <div class="save-banner-sub">Click "Save Config" to download room-config.json, then restart the server</div>
+  </div>
+  <div class="save-banner-actions">
+    <button class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3)" onclick="resetChanges()">Discard</button>
+    <button class="btn btn-primary" onclick="saveAndDownload()">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Save Config</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  ICON LIBRARY
+// ═══════════════════════════════════════════════════════════════════════
+const ICONS = {
+  screen:     { label: "Screen",     svg: `<svg viewBox="0 0 24 24"><path d="M21 3H3a2 2 0 00-2 2v12a2 2 0 002 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 002-2V5a2 2 0 00-2-2zm0 14H3V5h18v12z"/></svg>` },
+  whiteboard: { label: "Whiteboard", svg: `<svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>` },
+  video:      { label: "Video Conf", svg: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg>` },
+  phone:      { label: "Phone",      svg: `<svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>` },
+  wifi:       { label: "WiFi",       svg: `<svg viewBox="0 0 24 24"><path d="M1 9l2 2c5-5 13-5 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>` },
+  projector:  { label: "Projector",  svg: `<svg viewBox="0 0 24 24"><path d="M19 6H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2zm-9 7H8v-2h2v2zm6 0h-2v-2h2v2zm1-5H7V7h10v1z"/></svg>` },
+  wheelchair: { label: "Accessible", svg: `<svg viewBox="0 0 24 24"><path d="M12 2.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM16 17h-4l-1.5-4.5L9 14v4H7V13l3.5-2.5L9 6h2l1.5 4L15 8l1 2-3 2 1 3h2v2z"/></svg>` },
+  kitchen:    { label: "Kitchen",    svg: `<svg viewBox="0 0 24 24"><path d="M18 2.01L6 2c-1.1 0-2 .89-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-1.99-2-1.99zM9 19H7v-2h2v2zm0-4H7v-2h2v2zm0-4H7V9h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg>` },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+//  STATE — loaded from room-display-msal.html if available
+// ═══════════════════════════════════════════════════════════════════════
+let state = {
+  config: {
+    logoUrl:           "",
+    outlookUrl:        "https://outlook.office.com/calendar/0/deeplink/compose",
+    startHour:         8,
+    endHour:           22,
+    checkInWindowMins: 5,
+    checkInEnabled:    true,
+    bookingDurations:  [
+      { label: "30 min",  mins: 30  },
+      { label: "1 hour",  mins: 60  },
+      { label: "1.5 hrs", mins: 90  },
+      { label: "2 hours", mins: 120 },
+    ],
+    timezone:          "Australia/Melbourne",
+    locale:            "en-AU",
+    pinEnabled:        false,
+    pin:               "",
+    pinPrompt:         "Enter staff PIN to continue",
+    tenantId:          "18a3272b-d13b-4cb6-a054-c49cc0146dfb",
+    clientId:          "b170e4e5-1e8a-4392-aebb-eda6f3c07fc4",
+    authority:         "common",
+  },
+  rooms: [
+    { key:"boardroom", name:"Boardroom",     capacity:20, calendarEmail:"Weigall@localresidential.com.au",
+      features:[{label:'85" Screen',icon:'screen'},{label:'Whiteboard',icon:'whiteboard'},{label:'Video Conf.',icon:'video'},{label:'WiFi',icon:'wifi'}] },
+    { key:"meeting1",  name:"Meeting Room 1",capacity:6,  calendarEmail:"",
+      features:[{label:'55" Screen',icon:'screen'},{label:'Whiteboard',icon:'whiteboard'},{label:'WiFi',icon:'wifi'}] },
+    { key:"wellness",  name:"Wellness Room", capacity:1,  calendarEmail:"",
+      features:[{label:'WiFi',icon:'wifi'}] },
+    { key:"meeting2",  name:"Meeting Room 2",capacity:7,  calendarEmail:"",
+      features:[{label:'65" Screen',icon:'screen'},{label:'Whiteboard',icon:'whiteboard'},{label:'Video Conf.',icon:'video'}] },
+    { key:"meeting3",  name:"Meeting Room 3",capacity:4,  calendarEmail:"",
+      features:[{label:'55" Screen',icon:'screen'},{label:'Whiteboard',icon:'whiteboard'},{label:'WiFi',icon:'wifi'}] },
+    { key:"quiet1",    name:"Quiet Room 1",  capacity:1,  calendarEmail:"", features:[{label:'WiFi',icon:'wifi'}] },
+    { key:"quiet2",    name:"Quiet Room 2",  capacity:1,  calendarEmail:"", features:[{label:'WiFi',icon:'wifi'}] },
+    { key:"quiet3",    name:"Quiet Room 3",  capacity:1,  calendarEmail:"", features:[{label:'WiFi',icon:'wifi'}] },
+  ]
+};
+
+let isDirty = false;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════════════
+function renderDurations() {
+  const container = document.getElementById('durationsContainer');
+  if (!container) return;
+  const durations = state.config.bookingDurations || [];
+  container.innerHTML = durations.map((d, i) => `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div class="form-group" style="flex:2;margin:0">
+        <input type="text" value="${d.label}" placeholder="e.g. 30 min"
+          onchange="updateDuration(${i},'label',this.value)" oninput="markDirty()"
+          style="width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;">
+      </div>
+      <div class="form-group" style="flex:1;margin:0">
+        <input type="number" value="${d.mins}" placeholder="mins" min="5" max="480"
+          onchange="updateDuration(${i},'mins',parseInt(this.value))" oninput="markDirty()"
+          style="width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;">
+      </div>
+      <span style="font-size:12px;color:var(--text-dim);white-space:nowrap">mins</span>
+      <button onclick="removeDuration(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:0;line-height:1;" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function updateDuration(i, field, value) {
+  if (!state.config.bookingDurations) state.config.bookingDurations = [];
+  state.config.bookingDurations[i][field] = value;
+  markDirty();
+}
+
+function addDuration() {
+  if (!state.config.bookingDurations) state.config.bookingDurations = [];
+  if (state.config.bookingDurations.length >= 6) { alert('Maximum 6 duration options.'); return; }
+  state.config.bookingDurations.push({ label: 'New option', mins: 30 });
+  markDirty();
+  renderDurations();
+}
+
+function removeDuration(i) {
+  state.config.bookingDurations.splice(i, 1);
+  markDirty();
+  renderDurations();
+}
+
+function renderAll() {
+  // Global config fields
+  document.getElementById('cfg-logoUrl').value           = state.config.logoUrl;
+  document.getElementById('cfg-outlookUrl').value        = state.config.outlookUrl;
+  document.getElementById('cfg-startHour').value         = state.config.startHour;
+  document.getElementById('cfg-endHour').value           = state.config.endHour;
+  document.getElementById('cfg-checkInWindowMins').value = state.config.checkInWindowMins;
+  document.getElementById('cfg-checkInEnabled').checked  = state.config.checkInEnabled !== false;
+  renderDurations();
+  document.getElementById('cfg-timezone').value          = state.config.timezone;
+  document.getElementById('cfg-locale').value            = state.config.locale || 'en-AU';
+  document.getElementById('cfg-pinEnabled').checked      = state.config.pinEnabled;
+  document.getElementById('cfg-pin').value               = state.config.pin || '';
+  document.getElementById('cfg-pinPrompt').value         = state.config.pinPrompt || '';
+  document.getElementById('cfg-tenantId').value          = state.config.tenantId;
+  document.getElementById('cfg-clientId').value          = state.config.clientId;
+  document.getElementById('cfg-authority').value         = state.config.authority || 'common';
+  togglePinFields();
+  renderRooms();
+}
+
+function renderRooms() {
+  const list = document.getElementById('rooms-list');
+  list.innerHTML = '';
+  state.rooms.forEach((room, idx) => {
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.id = `room-card-${idx}`;
+
+    const featTags = room.features.map((f, fi) => `
+      <div class="feature-tag">
+        ${ICONS[f.icon]?.svg || ''}
+        ${f.label}
+        <button class="remove-feat" onclick="removeFeature(${idx},${fi})" title="Remove">×</button>
+      </div>`).join('');
+
+    const iconOptions = Object.entries(ICONS).map(([k,v]) =>
+      `<option value="${k}">${v.label}</option>`).join('');
+
+    card.innerHTML = `
+      <div class="room-card-header" onclick="toggleRoom(${idx})">
+        <div class="room-card-title">
+          ${room.name}
+          <span class="room-key-badge">?room=${room.key}</span>
+          ${room.calendarEmail ? '<span style="font-size:11px;color:#2e7d1e;font-weight:600">✓ Calendar linked</span>' : '<span style="font-size:11px;color:#e8a020;font-weight:600">No calendar</span>'}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--text-dim)">Cap. ${room.capacity}</span>
+          <svg class="chevron" id="chevron-${idx}" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+      </div>
+      <div class="room-card-body" id="room-body-${idx}">
+        <div class="form-row three">
+          <div class="form-group">
+            <label>Room Name</label>
+            <input type="text" value="${room.name}" onchange="updateRoom(${idx},'name',this.value)" oninput="markDirty()">
+          </div>
+          <div class="form-group">
+            <label>URL Key</label>
+            <input type="text" value="${room.key}" onchange="updateRoom(${idx},'key',this.value)" oninput="markDirty()" placeholder="e.g. boardroom">
+            <div class="form-hint">Used in ?room=KEY — do not change once tablets are set up</div>
+          </div>
+          <div class="form-group">
+            <label>Capacity</label>
+            <input type="number" min="1" value="${room.capacity}" onchange="updateRoom(${idx},'capacity',parseInt(this.value))" oninput="markDirty()">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Outlook Calendar Email</label>
+            <input type="email" value="${room.calendarEmail}" onchange="updateRoom(${idx},'calendarEmail',this.value)" oninput="markDirty()" placeholder="e.g. boardroom@yourcompany.com">
+            <div class="form-hint">The email address of this room's Outlook calendar resource. Provided by IT.</div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:8px">
+          <label>Room Features</label>
+          <div class="features-list" id="features-${idx}">${featTags}</div>
+        </div>
+        <div class="add-feature-row">
+          <div class="form-group" style="flex:1;margin:0">
+            <select id="feat-icon-${idx}">${iconOptions}</select>
+          </div>
+          <div class="form-group" style="flex:2;margin:0">
+            <input type="text" id="feat-label-${idx}" placeholder='Feature label, e.g. 85" Screen'>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="addFeature(${idx})" style="flex-shrink:0;white-space:nowrap">+ Add</button>
+        </div>
+        <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center">
+          <a class="preview-link" href="room-display-msal.html?room=${room.key}" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            Preview this room
+          </a>
+          <button class="btn btn-danger btn-sm" onclick="removeRoom(${idx})">Remove room</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function toggleRoom(idx) {
+  const body    = document.getElementById(`room-body-${idx}`);
+  const chevron = document.getElementById(`chevron-${idx}`);
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+function togglePinFields() {
+  const enabled = document.getElementById('cfg-pinEnabled').checked;
+  document.getElementById('pin-fields').style.display = enabled ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  STATE MUTATIONS
+// ═══════════════════════════════════════════════════════════════════════
+function markDirty() {
+  isDirty = true;
+  document.getElementById('saveBanner').classList.add('visible');
+}
+
+function readConfigFields() {
+  state.config.logoUrl           = document.getElementById('cfg-logoUrl').value.trim();
+  state.config.outlookUrl        = document.getElementById('cfg-outlookUrl').value.trim();
+  state.config.startHour         = parseInt(document.getElementById('cfg-startHour').value);
+  state.config.endHour           = parseInt(document.getElementById('cfg-endHour').value);
+  state.config.checkInWindowMins = parseInt(document.getElementById('cfg-checkInWindowMins').value);
+  state.config.checkInEnabled    = document.getElementById('cfg-checkInEnabled').checked;
+  // bookingDurations is managed directly in state.config via updateDuration/addDuration/removeDuration
+  state.config.timezone          = document.getElementById('cfg-timezone').value;
+  state.config.locale            = document.getElementById('cfg-locale').value;
+  state.config.pinEnabled        = document.getElementById('cfg-pinEnabled').checked;
+  state.config.pin               = document.getElementById('cfg-pin').value.trim();
+  state.config.pinPrompt         = document.getElementById('cfg-pinPrompt').value.trim();
+  state.config.tenantId          = document.getElementById('cfg-tenantId').value.trim();
+  state.config.clientId          = document.getElementById('cfg-clientId').value.trim();
+  state.config.authority         = document.getElementById('cfg-authority').value;
+}
+
+function updateRoom(idx, field, value) {
+  state.rooms[idx][field] = value;
+  markDirty();
+}
+
+function addRoom() {
+  const key = `room${state.rooms.length + 1}`;
+  state.rooms.push({ key, name: 'New Room', capacity: 10, calendarEmail: '', features: [] });
+  markDirty();
+  renderRooms();
+  // Open the new room card
+  setTimeout(() => {
+    toggleRoom(state.rooms.length - 1);
+    document.querySelector(`#room-card-${state.rooms.length-1} input`).focus();
+  }, 50);
+}
+
+function removeRoom(idx) {
+  if (!confirm(`Remove "${state.rooms[idx].name}"? This cannot be undone.`)) return;
+  state.rooms.splice(idx, 1);
+  markDirty();
+  renderRooms();
+}
+
+function addFeature(idx) {
+  const icon  = document.getElementById(`feat-icon-${idx}`).value;
+  const label = document.getElementById(`feat-label-${idx}`).value.trim();
+  if (!label) { alert('Please enter a feature label.'); return; }
+  state.rooms[idx].features.push({ icon, label });
+  document.getElementById(`feat-label-${idx}`).value = '';
+  markDirty();
+  renderRooms();
+  // Re-open the card
+  const body = document.getElementById(`room-body-${idx}`);
+  body.classList.add('open');
+  document.getElementById(`chevron-${idx}`).classList.add('open');
+}
+
+function removeFeature(roomIdx, featIdx) {
+  state.rooms[roomIdx].features.splice(featIdx, 1);
+  markDirty();
+  renderRooms();
+  const body = document.getElementById(`room-body-${roomIdx}`);
+  body.classList.add('open');
+  document.getElementById(`chevron-${roomIdx}`).classList.add('open');
+}
+
+function resetChanges() {
+  if (!confirm('Discard all unsaved changes?')) return;
+  isDirty = false;
+  document.getElementById('saveBanner').classList.remove('visible');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  GENERATE & DOWNLOAD updated room-display-msal.html
+// ═══════════════════════════════════════════════════════════════════════
+
+
+function showSaveReminder() {
+  // Try to show the server path based on current URL
+  const pathEl = document.getElementById('reminderPath');
+  if (pathEl && window.location.hostname === 'localhost') {
+    const url = window.location.href.replace('room-config.html','').replace(/\/$/, '');
+    pathEl.textContent = url.replace('http://localhost:8080', 'C:\\...\\Room Booking') 
+      + ' (same folder as room-display-msal.html)';
+  }
+  document.getElementById('saveReminderOverlay').classList.add('visible');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('visible', 'success');
+  setTimeout(() => t.classList.remove('visible', 'success'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SAVE & DOWNLOAD
+//  Fetches the live room-display-msal.html, surgically replaces only
+//  the CONFIG and ROOMS blocks, then downloads the updated file.
+//  This means all CSS, HTML structure and JS engine are preserved exactly.
+// ═══════════════════════════════════════════════════════════════════════
+async function saveAndDownload() {
+  readConfigFields();
+
+  // Build the config object
+  const configData = {
+    config: state.config,
+    rooms:  state.rooms
+  };
+
+  const json = JSON.stringify(configData, null, 2);
+
+  // Download as room-config.json
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'room-config.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  isDirty = false;
+  document.getElementById('saveBanner').classList.remove('visible');
+  showToast('✓ Downloaded room-config.json');
+  showSaveReminder();
+}
+
+// ── Watch all config inputs for changes ──────────────────────────────
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('change', markDirty);
+});
+
+// ── Init ─────────────────────────────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>`;
